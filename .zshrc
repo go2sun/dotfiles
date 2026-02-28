@@ -12,7 +12,7 @@ export CXXFLAGS="-march=apple-m4"
 # --- 3. Distilled Factory Aliases (逻辑工厂自动化) ---
 alias dot='cd ~/dotfiles'
 alias factory-sync='git fetch --prune && git pull origin main'
-alias brew-sync='brew bundle dump --force && git add Brewfile && git commit -m "update: brew list" && git push'
+alias brew-sync="(cd ~/dotfiles && brew bundle dump --force && git add Brewfile && git commit -m 'update: brew list' && git push)"
 
 # --- 4. General & Python Aliases ---
 alias python="python3"
