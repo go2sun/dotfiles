@@ -3,16 +3,15 @@ export PATH="/opt/homebrew/bin:$PATH"
 autoload -Uz compinit && compinit
 
 # --- 2. M4 Performance Tuning (Apple Silicon) ---
-# 针对 M4 统一内存优化 Ollama 运行效率
 export OLLAMA_MAX_LOADED_MODELS=3
 export OLLAMA_NUM_PARALLEL=4
 export CFLAGS="-march=apple-m4"
 export CXXFLAGS="-march=apple-m4"
 
-# --- 3. Distilled Factory Aliases (逻辑工厂自动化) ---
+# --- 3. Distilled Factory Aliases ---
 alias dot='cd ~/dotfiles'
-alias factory-sync='git fetch --prune && git pull origin main'
-alias brew-sync="(cd ~/dotfiles && brew bundle dump --force && git add Brewfile && git commit -m 'update: brew list' && git push)"
+alias syncfactory='git fetch --prune && git pull origin main'
+alias syncbrew="(cd ~/dotfiles && brew bundle dump --force && git add Brewfile && git commit -m 'update: brew list' && git push)"
 
 # --- 4. General & Python Aliases ---
 alias python="python3"
@@ -45,11 +44,11 @@ look_ai() {
     open "obsidian://open?vault=$VAULT_NAME&file=Inbox/$LATEST_FILE"
 }
 
-# --- 7. Dual-Mode Ollama (内置 SSD vs 外置硬盘) ---
+# --- 7. Dual-Mode Ollama ---
 alias fastollama="killall ollama 2>/dev/null; unset OLLAMA_MODELS; OLLAMA_HOST=127.0.0.1:11434 ollama serve"
 alias bigollama="killall ollama 2>/dev/null; export OLLAMA_MODELS='/Volumes/ORICO/Models/ollama_models'; OLLAMA_HOST=127.0.0.1:11434 ollama serve"
 
 # --- 8. Completions ---
 [[ -f "/Users/nusun/.openclaw/completions/openclaw.zsh" ]] && source "/Users/nusun/.openclaw/completions/openclaw.zsh"
 
-# Sync Last Refreshed: $(date)
+# Last Distilled: 2026-02-28
