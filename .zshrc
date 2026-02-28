@@ -24,7 +24,6 @@ alias code='/Applications/Visual\ Studio\ Code\ -\ Insiders.app/Contents/Resourc
 alias go-claw='cd ~/Developer/OpenClaw'
 alias aia='python3 ~/aia.py'
 alias sum='python3 /Users/nusun/Documents/Project/MacMiniM4/Obsidian_QuickAction.py'
-alias claw='PATH="/Users/nusun/Documents/Project/nanoclaw/fake_bin:$PATH" node run.js'
 alias sf='~/Desktop/M4_Shifu/start_sf.sh'
 
 # --- 6. Gemini AI & Obsidian Workflow ---
@@ -52,3 +51,15 @@ alias bigollama="killall ollama 2>/dev/null; export OLLAMA_MODELS='/Volumes/ORIC
 [[ -f "/Users/nusun/.openclaw/completions/openclaw.zsh" ]] && source "/Users/nusun/.openclaw/completions/openclaw.zsh"
 
 # Last Distilled: 2026-02-28
+
+# --- Intelligent Claw Orchestrator ---
+claw() {
+    if ! lsof -i :11434 > /dev/null; then
+        echo "⚡️ 检测到 Ollama 未启动，正在为你唤醒 M4 GPU..."
+        # 后台启动 fastollama
+        (fastollama > /dev/null 2>&1 &)
+        sleep 2 # 给 GPU 一点热身时间
+    fi
+    echo "🦀 OpenClaw 准备就绪，注入逻辑..."
+    PATH="/Users/nusun/Documents/Project/nanoclaw/fake_bin:$PATH" node ~/Developer/OpenClaw/run.js
+}
