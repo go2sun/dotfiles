@@ -28,15 +28,31 @@ func main() {
 		fmt.Println("🚀 [M4 最终版] 启动单次快照审计...")
 		trigger()
 	} else {
-		fmt.Println("👁️ [守护模式] 监听剪贴板信号...")
-		for {
-			out, _ := exec.Command("pbpaste").Output()
-			if strings.TrimSpace(string(out)) == "snap" {
-				trigger()
-				exec.Command("sh", "-c", "echo '' | pbcopy").Run()
-			}
-			time.Sleep(1 * time.Second)
+		fmt.Println("🏗️ 启动 nanoclaw (Go 引擎)...")
+		fmt.Println("👁️ [守护模式] 正在监听信号 (snap / clear_all_logs)...")
+		daemonLoop()
+	}
+}
+
+func daemonLoop() {
+	for {
+		out, _ := exec.Command("pbpaste").Output()
+		curr := strings.TrimSpace(string(out))
+
+		if curr == "snap" {
+			fmt.Println("🔔 收到快照信号...")
+			trigger()
+			exec.Command("sh", "-c", "echo '' | pbcopy").Run()
+		} else if curr == "clear_all_logs" {
+			fmt.Println("🧹 收到网页指令：正在一键清空历史记录...")
+			// 执行物理清理并推送到 GitHub
+			cleanupCmd := fmt.Sprintf("cd %s && rm -f AR_Audit_*.md screenshots/*.jpg && git add . && git commit -m '🧹 一键清空' && git push", GitRepoPath)
+			exec.Command("sh", "-c", cleanupCmd).Run()
+			exec.Command("say", "审计记录已清空").Run()
+			exec.Command("sh", "-c", "echo '' | pbcopy").Run()
+			fmt.Println("✨ 清理完成。")
 		}
+		time.Sleep(1 * time.Second)
 	}
 }
 
