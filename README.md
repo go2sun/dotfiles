@@ -16,3 +16,7 @@
 ## 📁 目录结构梳理
 * `/tmux/tmux.conf`: 核心逻辑定义，已消除 `bold] 0` 乱码。
 * `/scripts/`: 包含 `watch_m4.sh`, `start_claw.sh` 等自动化审计脚本。
+
+## 👁️ 视觉优化
+* 字体: Intel One Mono / Sarasa Term SC
+* 调光: MonitorControl DDC Enabled
