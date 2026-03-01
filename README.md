@@ -21,3 +21,4 @@
 * 字体: Intel One Mono / Sarasa Term SC
 * 调光: MonitorControl DDC Enabled
 * 字体方案: Sarasa Term SC (Term 版本)
+* 视觉环境: 已完成 Sarasa Term SC 自动化脚本修复 (V1.2)
