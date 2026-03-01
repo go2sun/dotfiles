@@ -20,3 +20,4 @@
 ## 👁️ 视觉优化
 * 字体: Intel One Mono / Sarasa Term SC
 * 调光: MonitorControl DDC Enabled
+* 字体方案: Sarasa Term SC (Term 版本)
