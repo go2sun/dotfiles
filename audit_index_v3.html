@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>M4 指挥中心 V3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #000; color: #0f0; font-family: "PingFang SC", sans-serif; }
+        .card { border: 1px solid #004400; background: rgba(0, 10, 0, 0.9); transition: 0.3s; }
+        .bug-box { border: 1px solid #ff4d4d; color: #ff4d4d; padding: 5px; margin-top: 5px; background: rgba(255,0,0,0.1); border-radius: 4px; }
+        .focus-box { color: #ffcc00; margin-top: 5px; font-weight: bold; }
+        .tag { background: #003366; color: #00d9ff; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-right: 4px; }
+    </style>
+</head>
+<body class="p-6">
+    <div class="flex justify-between items-center mb-6 border-b border-green-900 pb-4">
+        <h1 class="text-2xl font-bold tracking-tighter">👁️ M4 视觉审计系统 (最终版)</h1>
+        <div class="text-right text-[10px] text-green-700">状态：核心已就绪 | 模式：中文深度审计</div>
+    </div>
+    <div id="logs" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    <script>
+        async function load() {
+            const res = await fetch('https://api.github.com/repos/go2sun/m4-audit-logs/contents/');
+            const files = await res.json();
+            const container = document.getElementById('logs');
+            container.innerHTML = '';
+            const mds = files.filter(f => f.name.endsWith('.md')).reverse();
+            for (const f of mds) {
+                const data = await (await fetch(f.download_url)).text();
+                const img = data.match(/!\[Screenshot\]\(\.\/screenshots\/(.*?)\)/)?.[1];
+                let content = data.split('\n').filter(l => l.trim() && !l.startsWith('#') && !l.startsWith('!'))[0] || "";
+                
+                // 视觉格式化
+                content = content
+                    .replace(/BUG:(.*?)(?=FOCUS:|KEYWORDS:|$)/gi, '<div class="bug-box">🚨 故障解析: $1</div>')
+                    .replace(/FOCUS:(.*?)(?=BUG:|KEYWORDS:|$)/gi, '<div class="focus-box">🎯 审计重点: $1</div>')
+                    .replace(/KEYWORDS:(.*?)(?=BUG:|FOCUS:|$)/gi, (m, p1) => '<div class="mt-2">' + p1.split(',').map(t => `<span class="tag"># ${t.trim()}</span>`).join('') + '</div>');
+
+                const card = document.createElement('div');
+                card.className = 'card p-4 rounded-lg shadow-lg shadow-green-900/10';
+                card.innerHTML = `
+                    <div class="text-[9px] text-green-900 mb-2">${f.name}</div>
+                    <img src="./screenshots/${img}" class="w-full h-40 object-cover rounded border border-green-950 mb-3">
+                    <div class="text-sm text-green-400">${content}</div>
+                `;
+                container.appendChild(card);
+            }
+        }
+        load(); setInterval(load, 60000);
+    </script>
+</body>
+</html>
