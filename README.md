@@ -29,3 +29,4 @@ chmod +x deploy.sh
 ## 🧹 常用维护命令
 * **同步软件列表**：`brew bundle dump --force && git add Brewfile && git commit -m "update: brew list" && git push`
 * **重载配置**：`source ~/.zshrc`
+- Font: JetBrainsMono Nerd Font (Manual Install via releases)
