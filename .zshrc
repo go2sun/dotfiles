@@ -86,4 +86,4 @@ alias bigollama="killall ollama 2>/dev/null; export OLLAMA_MODELS='/Volumes/ORIC
 # =================================================================
 [[ -f "/Users/nusun/.openclaw/completions/openclaw.zsh" ]] && source "/Users/nusun/.openclaw/completions/openclaw.zsh"
 
-# 最后同步时刻: 2026-02-28
+# 最后同步时刻: 2026-02-28alias nanoclaw='/usr/local/bin/nanoclaw'

@@ -21,20 +21,21 @@ const (
 )
 
 func main() {
-	snap := flag.Bool("snap", false, "触发单次审计")
+	// 1. 必须在最开始定义并解析 Flag
+	snap := flag.Bool("snap", false, "执行单次审计")
 	flag.Parse()
 
+	// 2. 根据 Flag 决定执行路径
 	if *snap {
-		fmt.Println("🚀 [M4 最终版] 启动单次快照审计...")
+		fmt.Println("🚀 [M4 最终版] 正在执行单次快照审计...")
 		trigger()
-	} else {
-		fmt.Println("🏗️ 启动 nanoclaw (Go 引擎)...")
-		fmt.Println("👁️ [守护模式] 正在监听信号 (snap / clear_all_logs)...")
-		daemonLoop()
+		return // 执行完直接退出，不进入监听模式
 	}
-}
 
-func daemonLoop() {
+	// 3. 只有不带 -snap 时才进入守护模式
+	fmt.Println("🏗️  启动 nanoclaw (Go 引擎)...")
+	fmt.Println("👁️  [守护模式] 正在监听信号 (snap / clear_all_logs)...")
+	
 	for {
 		out, _ := exec.Command("pbpaste").Output()
 		curr := strings.TrimSpace(string(out))
@@ -44,13 +45,11 @@ func daemonLoop() {
 			trigger()
 			exec.Command("sh", "-c", "echo '' | pbcopy").Run()
 		} else if curr == "clear_all_logs" {
-			fmt.Println("🧹 收到网页指令：正在一键清空历史记录...")
-			// 执行物理清理并推送到 GitHub
+			fmt.Println("🧹 收到网页指令：正在一键清空...")
 			cleanupCmd := fmt.Sprintf("cd %s && rm -f AR_Audit_*.md screenshots/*.jpg && git add . && git commit -m '🧹 一键清空' && git push", GitRepoPath)
 			exec.Command("sh", "-c", cleanupCmd).Run()
 			exec.Command("say", "审计记录已清空").Run()
 			exec.Command("sh", "-c", "echo '' | pbcopy").Run()
-			fmt.Println("✨ 清理完成。")
 		}
 		time.Sleep(1 * time.Second)
 	}
@@ -88,5 +87,6 @@ func trigger() {
 	os.WriteFile(filepath.Join(GitRepoPath, fmt.Sprintf("AR_Audit_%s.md", ts)), []byte(md), 0644)
 	
 	fmt.Println("📤 同步云端并播报...")
+	// 确保调用刚才重建的绝对路径版 sync.sh
 	exec.Command("sh", "-c", fmt.Sprintf("cd %s && ./sync.sh", GitRepoPath)).Run()
 }
