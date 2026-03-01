@@ -3,3 +3,4 @@ alias syncm4="cd /Users/nusun/dotfiles && git add . && git commit -m "M4_Final_S
 alias cddot="cd /Users/nusun/dotfiles"
 alias m4v="code /Users/nusun/dotfiles"
 eval "$(/opt/homebrew/bin/brew shellenv)"
+alias syncbrew='brew bundle dump --force --file=~/dotfiles/Brewfile && syncm4'
