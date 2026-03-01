@@ -1,4 +1,10 @@
 # Taps
+brew "ncurses"
+brew "libevent"
+brew "utf8proc"
+
+brew "ncurses"
+
 tap "homebrew/bundle"
 tap "homebrew/services"
 tap "anhoder/go-musicfox"
