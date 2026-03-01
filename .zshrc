@@ -4,3 +4,4 @@ alias cddot="cd /Users/nusun/dotfiles"
 alias m4v="code /Users/nusun/dotfiles"
 eval "$(/opt/homebrew/bin/brew shellenv)"
 alias syncbrew='brew bundle dump --force --file=~/dotfiles/Brewfile && syncm4'
+alias syncm4='cd ~/dotfiles && git add . && git commit -m "M4 Audit System Final Sync 2026-03-01" && git push origin main'
