@@ -1,3 +1,7 @@
+alias cleanm4="pkill -9 ollama; pkill -9 openclaw; rm -f ~/.ollama/sessions/*; sleep 1; echo 'M4 系统暴力重置成功'"
+alias qwen="cleanm4 && stty sane && ollama run qwen3.5:9b"
+alias checkqwen="cleanm4 && (ollama run qwen3.5:9b '系统自检' | tail -n 5 | tr '\n' ' | ' | sed 's/ | $//' | tee -a ~/dotfiles/audit_performance.log; echo '')"
+alias syncm4="perl -i -ne 'print unless \$seen{\$_}++' ~/.zshrc; cp ~/.zshrc ~/dotfiles/; cd ~/dotfiles && git add . && git commit -m 'M4 Audit: Clean & Fix Aliases' && git push"
 export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/nusun/bin"
 alias syncm4="cd /Users/nusun/dotfiles && git add . && git commit -m "M4_Final_Sync" && git push origin main"
 alias cddot="cd /Users/nusun/dotfiles"
