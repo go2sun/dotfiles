@@ -1,5 +1,4 @@
 # M4 视觉审计系统 (最终版) 极速引擎配置
-alias cleanm4="pkill -9 ollama; pkill -9 openclaw; rm -rf ~/.ollama/sessions >/dev/null 2>&1; mkdir -p ~/.ollama/sessions; sleep 0.5; echo 'M4 系统重置成功'"
 
 # 使用 4b 引擎，彻底消除 Thinking 延迟
 
@@ -11,7 +10,12 @@ alias updatereadme="echo '# M4 视觉审计系统 性能看板\n\n### 最近审�
 alias syncm4="updatereadme; cp ~/.zshrc ~/dotfiles/; cd ~/dotfiles && git add . && git commit -m 'M4 Audit: Switch to 4B High Speed Engine' && git push"
 
 echo "M4 视觉审计系统 (最终版) 极速引擎已就绪。"
-alias qwen="cleanm4 && stty sane && ollama run qwen-m4-final --verbose"
-alias fastcheck='echo "
 #### 实时自检 ($(date)):
 ```text" >> ~/dotfiles/README.md && ollama run qwen-m4-final "自检" --verbose 2>&1 | tail -n 5 >> ~/dotfiles/README.md && echo "```" >> ~/dotfiles/README.md && syncm4'
+#### 9B 4-bit 自检 (\$(date)):
+\`\`\`text\" >> ~/dotfiles/README.md && ollama run qwen-m4-final \"自检\" --verbose 2>&1 | tail -n 5 >> ~/dotfiles/README.md && echo \"\`\`\`\" >> ~/dotfiles/README.md && syncm4"
+alias cleanm4="pkill -9 ollama; stty sane; brew cleanup; echo \"M4 系统安全重置成功\""
+alias fastcheck="echo \"
+#### 9B 4-bit 自检 (\$(date)):
+\`\`\`text\" >> ~/dotfiles/README.md && ollama run qwen-m4-final \"自检\" --verbose 2>&1 | tail -n 5 >> ~/dotfiles/README.md && echo \"\`\`\`\" >> ~/dotfiles/README.md && syncm4"
+alias qwen="ollama run qwen3.5-nothink"
