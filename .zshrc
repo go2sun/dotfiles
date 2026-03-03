@@ -12,3 +12,6 @@ alias syncm4="updatereadme; cp ~/.zshrc ~/dotfiles/; cd ~/dotfiles && git add . 
 
 echo "M4 视觉审计系统 (最终版) 极速引擎已就绪。"
 alias qwen="cleanm4 && stty sane && ollama run qwen-m4-final --verbose"
+alias fastcheck='echo "
+#### 实时自检 ($(date)):
+```text" >> ~/dotfiles/README.md && ollama run qwen-m4-final "自检" --verbose 2>&1 | tail -n 5 >> ~/dotfiles/README.md && echo "```" >> ~/dotfiles/README.md && syncm4'
