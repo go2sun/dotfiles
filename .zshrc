@@ -11,4 +11,4 @@ alias updatereadme="echo '# M4 视觉审计系统 性能看板\n\n### 最近审�
 alias syncm4="updatereadme; cp ~/.zshrc ~/dotfiles/; cd ~/dotfiles && git add . && git commit -m 'M4 Audit: Switch to 4B High Speed Engine' && git push"
 
 echo "M4 视觉审计系统 (最终版) 极速引擎已就绪。"
-alias qwen="cleanm4 && stty sane && ollama run qwen3.5:4b --verbose"
+alias qwen="cleanm4 && stty sane && ollama run qwen-m4-final --verbose"
