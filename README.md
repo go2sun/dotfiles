@@ -1,28 +1,8 @@
-# 🖥️ M4 视觉审计系统 (M4 Visual Audit System)
-> 最终稳定版 V2.4 - 基于 Apple MacMini M4 构建
+# M4 视觉审计系统 性能看板
 
-## 📊 系统核心视觉逻辑
-系统通过 `tmux` 状态栏提供直观的实时审计反馈：
+### 最近审计记录 (Latest 5)
 
-* **常规模式**：左下角显示黄底红字编号，保持视觉清爽。
-* **同步模式 (`Ctrl-a + s`)**：左下角立即翻转为 **红底白字 ⚠️ SYNC**，强制提醒多面板操作，杜绝误触。
+```text
+ 各项核心功能运行正常，网络连接稳定。我已准备就绪，随时等待您的指令或提问。  请问您需要我协助您处理什么任务呢？  ```
 
-## ⌨️ 快捷指令集
-* **前缀键 (Prefix)**: `Ctrl + a` (已解决 macOS 系统蜂鸣冲突)。
-* **面板同步**: `Prefix` + `s` (带状态栏颜色强制刷新)。
-* **配置重载**: `Prefix` + `r` (应用 `~/dotfiles/tmux/tmux.conf` 的更改)。
-* **云端同步**: 输入 `syncm4` 自动推送本地审计脚本与配置。
-
-## 📁 目录结构梳理
-* `/tmux/tmux.conf`: 核心逻辑定义，已消除 `bold] 0` 乱码。
-* `/scripts/`: 包含 `watch_m4.sh`, `start_claw.sh` 等自动化审计脚本。
-
-## 👁️ 视觉优化
-* 字体: Intel One Mono / Sarasa Term SC
-* 调光: MonitorControl DDC Enabled
-* 字体方案: Sarasa Term SC (Term 版本)
-* 视觉环境: 已完成 Sarasa Term SC 自动化脚本修复 (V1.2)
-
-## 🎨 视觉系统交付状态
-* 字体: Sarasa Term SC (14pt)
-* 调优: MonitorControl + DDC Enabled
+> 自动同步时间: $(date)

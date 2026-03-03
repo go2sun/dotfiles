@@ -8,3 +8,11 @@ alias syncm4="updatereadme; cp ~/.zshrc ~/dotfiles/; cd ~/dotfiles && git add . 
 
 # 默认欢迎
 echo "M4 视觉审计系统 (最终版) 已就绪。"
+
+# --- M4 视觉审计系统 - 自动修复脚本 ---
+alias fix-pixel='adb -s 192.168.68.57:33199 shell pm clear com.google.android.googlequicksearchbox && \
+                 adb -s 192.168.68.57:33199 shell pm clear com.google.android.webview && \
+                 adb -s 192.168.68.57:33199 shell am force-stop com.google.android.apps.nexuslauncher && \
+                 echo "--- 代理状态审计 ---" && \
+                 adb -s 192.168.68.57:33199 shell settings get global http_proxy'
+# --- 结束 ---
