@@ -55,3 +55,5 @@ alias checkqwen="cleanm4 && ollama run qwen3.5:9b \"请进行系统自检，仅�
 alias qwen="cleanm4 && ollama run qwen3.5:9b"
 alias cleanm4="pkill -9 ollama; pkill -9 openclaw; rm -f ~/.ollama/sessions/*; sleep 1; echo \"M4 系统暴力重置成功\""
 alias avgm4="grep -oE \"rate: [0-9.]+\" ~/dotfiles/audit_performance.log | awk \"{sum+=\$2; count++} END {if (count > 0) print \\"M4 平均审计速率: \\", sum/count, \\" tokens/s\\"; else print \\"尚无记录\\"}\""
+alias cleanm4="pkill -9 ollama; pkill -9 openclaw; rm -rf ~/.ollama/sessions >/dev/null 2>&1; mkdir -p ~/.ollama/sessions; sleep 1; echo \"M4 系统暴力重置成功\""
+alias checkqwen="cleanm4 && (ollama run qwen3.5:9b \"系统自检\" | tail -n 5 | tr \"\n\" \" | \" | sed \"s/ | $//\" | tee -a ~/dotfiles/audit_performance.log; echo \"\")"
