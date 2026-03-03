@@ -1,0 +1,5 @@
+List of devices attached
+192.168.68.57:33199	device
+adb-36091FDH2004ZR-htuIg3._adb-tls-connect._tcp	device
+
+2026年 3月 3日 星期二 12时35分52秒 EST
