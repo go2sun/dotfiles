@@ -49,3 +49,4 @@ alias cleanm4="killall ollama; killall openclaw; lsof -ti:18789 | xargs kill -9 
 alias qwen="cleanm4 && stty sane && ollama run qwen3.5:9b"
 alias checkqwen="cleanm4 && ollama run qwen3.5:9b \"请进行系统自检，仅输出 OK\" | tail -n 5 | tr \"\n\" \" | \" | sed \"s/ | $//\""
 alias qwen="cleanm4 && ollama run qwen3.5:9b"
+alias cleanm4="pkill -9 ollama; pkill -9 openclaw; rm -f ~/.ollama/sessions/*; sleep 1; echo \"M4 系统暴力重置成功\""
