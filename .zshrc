@@ -39,3 +39,7 @@ alias cleanm4="killall ollama; killall openclaw; lsof -ti:18789 | xargs kill -9 
 alias glm="cleanm4 && ollama run glm-4.7-flash:8b"
 alias qwen="cleanm4 && ollama run qwen3.5:9b"
 alias syncm4="perl -i -ne \"print unless \$seen{\$_}++\" ~/.zshrc; cp ~/.zshrc ~/dotfiles/; cd ~/dotfiles && git add . && git commit -m \"M4 Audit System: Integrated Optimized Aliases\" && git push"
+alias cleanm4="killall ollama; killall openclaw; lsof -ti:18789 | xargs kill -9 2>/dev/null; echo \"M4 系统已重置\""
+alias glm="cleanm4 && ollama run glm-4.7-flash:8b"
+alias qwen="cleanm4 && ollama run qwen3.5:9b"
+alias syncm4="perl -i -ne \"print unless \$seen{\$_}++\" ~/.zshrc; cp ~/.zshrc ~/dotfiles/; cd ~/dotfiles && git add . && git commit -m \"M4 Audit System: Final Clean Config\" && git push"
