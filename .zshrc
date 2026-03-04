@@ -5,7 +5,6 @@ export DOTFILES="$HOME/dotfiles"
 mkdir -p $DOTFILES
 
 # 暴力重置与清理
-alias cleanm4="pkill -9 ollama; pkill -9 openclaw; sleep 1; stty sane; echo 'M4 系统重置成功'"
 
 # 核心指令：使用 qwen3.5-nothink 模型并开启 verbose 统计
 
@@ -17,3 +16,18 @@ alias fastcheck="ollama run qwen3.5-nothink '执行系统性能自检' --verbose
 
 echo 'M4 视觉审计系统 (最终版) 极速引擎已就绪。'
 alias qwen="ollama run qwen-m4-final --verbose && sleep 0.5 && stty sane"
+  if [ $# -eq 0 ]; then
+    # 无参数时，尝试打开 UI（虽然目前 Docker 未运行，这作为占位符）
+    open http://localhost:3000
+  else
+    # 有参数时，直接调用 M4 巅峰引擎并修复终端乱码
+    ollama run qwen-m4-final "$@" --verbose && stty sane
+  fi
+}
+openclaw() {
+  if [ $# -eq 0 ]; then
+    open http://localhost:3000
+  else
+    ollama run qwen-m4-final "$@" --verbose && stty sane
+  fi
+}
