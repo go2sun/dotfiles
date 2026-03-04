@@ -23,11 +23,24 @@ alias qwen="ollama run qwen-m4-final --verbose && sleep 0.5 && stty sane"
     # 有参数时，直接调用 M4 巅峰引擎并修复终端乱码
     ollama run qwen-m4-final "$@" --verbose && stty sane
   fi
-}
-openclaw() {
   if [ $# -eq 0 ]; then
     open http://localhost:3000
   else
     ollama run qwen-m4-final "$@" --verbose && stty sane
   fi
+  if [ "$1" = "gateway" ]; then
+    # 如果指令包含 gateway，则尝试真正拉起服务
+  elif [ $# -eq 0 ]; then
+    open http://localhost:3000
+  else
+    ollama run qwen-m4-final "$@" --verbose && stty sane
+  fi
+openclaw() {
+    if [ "$1" = "gateway" ]; then
+        ollama launch openclaw --model qwen-m4-final:latest
+    elif [ $# -eq 0 ]; then
+        open http://localhost:3000
+    else
+        ollama run qwen-m4-final "$@" --verbose && stty sane
+    fi
 }
