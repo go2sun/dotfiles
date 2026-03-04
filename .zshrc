@@ -49,9 +49,6 @@ openclaw() {
 # M4 视觉审计系统 - 自动修复网关逻辑
 openclaw () {
     if ! pgrep -f "clawdbot gateway serve" > /dev/null; then
-        echo "🚀 正在激活 M4 视觉审计系统后台网关..."
-        nohup /usr/local/bin/clawdbot gateway serve >/dev/null 2>&1 &
-        sleep 1
     fi
 
     if [ "$1" = "gateway" ]; then
