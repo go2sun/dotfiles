@@ -36,11 +36,11 @@ alias qwen="ollama run qwen-m4-final --verbose && sleep 0.5 && stty sane"
     ollama run qwen-m4-final "$@" --verbose && stty sane
   fi
 openclaw() {
-    if [ "$1" = "gateway" ]; then
-        ollama launch openclaw --model qwen-m4-final:latest
-    elif [ $# -eq 0 ]; then
-        open http://localhost:3000
+    if [ $# -eq 0 ]; then
+        # 无参数时，打开 Ollama 状态页确认内核在线
+        open http://localhost:11434
     else
+        # 有参数时，保持 267 tokens/s 的极速审计输出
         ollama run qwen-m4-final "$@" --verbose && stty sane
     fi
 }
