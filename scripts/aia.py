@@ -3,7 +3,7 @@ import requests
 import sys
 
 def run():
-    api_key = "你AIzaSyDDDla4rh2rNfEfCol2bHmWaZL5Cbdihn0的AIza密钥"
+    api_key = "YOUR_API_KEY_HERE"  # 请替换为从环境变量中读取的方法
     if len(sys.argv) < 2:
         print(" Usage: aia \"your question\"")
         return
