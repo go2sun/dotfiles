@@ -1,0 +1,55 @@
+{
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "openai": {
+        "baseUrl": "http://127.0.0.1:8787/v1",
+        "apiKey": "sk-123456",
+        "api": "openai-chat",
+        "models": [
+          {
+            "id": "gemini-2.5-flash",
+            "name": "Gemini 2.5 (High Logic)",
+            "contextWindow": 1000000
+          }
+        ]
+      },
+      "ollama": {
+        "baseUrl": "http://localhost:11434",
+        "apiKey": "ollama",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "openclaw-nemo",
+            "name": "Mistral Nemo (Uncensored)",
+            "contextWindow": 32768
+          },
+          {
+            "id": "huihui_ai/qwen2.5-coder-abliterate:latest",
+            "name": "huihui_ai/qwen2.5-coder-abliterate:latest"
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "ollama/huihui_ai/qwen2.5-coder-abliterate:latest"
+      },
+      "maxConcurrent": 1
+    }
+  },
+  "gateway": {
+    "mode": "local"
+  },
+  "channels": {
+    "telegram": {
+      "botToken": "8405829351:AAF1VKRcMMAVMz5FpnRBskEeO9ALFG-Lhko",
+      "allowFrom": [
+        "8405829351"
+      ],
+      "enabled": true
+    }
+  }
+}
