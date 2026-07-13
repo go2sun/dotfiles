@@ -42,49 +42,56 @@ cleanm4() {
     echo "✨ 清理完成。"
 }
 
-# --- [最终审计同步流程] ---
-# --- [最终审计同步流程 - 优化版] ---
 q() {
-  # 彻底清理旧服务防止端口冲突
-  stopq > /dev/null 2>&1
-  echo -ne "\033]0;M4 LLM Service (MCP Integrated)\007"
-  
-  # 增加 --log-disable 参数，减少终端冗余日志输出
+  stopq
   /Users/nusun/llama.cpp/build/bin/llama-server \
     -m "/Users/nusun/models/llm/Qwythos-9B-Claude-Mythos-5-1M-MTP-Q6_K.gguf" \
     --jinja --port 9090 \
-    --mcp "/Users/nusun/bin/m4-mcp.sh" \
+    --mcp "/Users/nusun/bin/m4-mcp-lite.sh" \
+    --ctx-size 32768 \
     --log-disable \
-    -ngl 99 -c 16384 -np 1 \
-    --cache-type-k q8_0 --cache-type-v q8_0 --temp 0.2 &
+    -ngl 99 \
+    --temp 0.2 &
 }
 
 # MCP Chat Command (mcc) - 增加推理模式选择
 mcc() {
-    # 检查服务状态
-    if ! lsof -i:9090 > /dev/null; then
-        echo "⚠️ M4 LLM 服务未运行，请先执行 q"
-        return 1
-    fi
-    echo "--- M4 审计推理中: $1 ---"
+    # 强制重新注入环境变量并执行，确保 MCP 代理正确响应
+    export FIRECRAWL_API_KEY=$(grep FIRECRAWL_API_KEY ~/.dotfiles/.secrets.env | cut -d '=' -f2)
+    echo "--- M4 MCP 审计模式启动 ---"
     curl -s http://127.0.0.1:9090/completion \
     -H "Content-Type: application/json" \
-    -d "{\"prompt\": \"$1\", \"n_predict\": 1024, \"temperature\": 0.2}" | jq -r .content
+    -d "{\"prompt\": \"$1\", \"n_predict\": 1024}" | jq -r .content
 }
 
-# syncm4 逻辑强化
+# --- [扩展：M4 视觉审计系统 MCP 大脑连接器] ---
+# 用于将外部 MCP 节点动态挂载至 Claude Desktop 或本地审计环境
+m4-connect() {
+    local url=$1
+    local token=$2
+    local name=${3:-"m4-remote-brain"}
+    
+    python3 "/Users/nusun/M4_Repo/scripts/maintenance/m4_mcp_connect.py" "$url" --token "$token" --name "$name"
+}
+
+# 2. 强化后的 syncm4 (加入自动化审计配置)
 syncm4() {
     local COMMIT_MSG="M4 审计同步: $(date '+%Y-%m-%d %H:%M:%S')"
     echo "🛡️ [M4 审计] 启动全量同步..."
+
+    # 预先同步 MCP 配置(如果存在于环境)
+    if [ -f "$HOME/dotfiles/.mcp_config" ]; then
+        echo "🔗 正在根据 dotfiles 映射远程大脑..."
+        xargs -a "$HOME/dotfiles/.mcp_config" m4-connect
+    fi
 
     local sync_dirs=("$HOME/M4_Repo" "$HOME/dotfiles" "$HOME/brain")
     for dir in "${sync_dirs[@]}"; do
         if [ -d "$dir/.git" ]; then
             cd "$dir" || continue
             git add . && git commit -m "$COMMIT_MSG" > /dev/null 2>&1
-            git push origin main
+            git push origin main > /dev/null 2>&1
             
-            # 使用更严谨的敏感词过滤
             if git grep -IqE "AIza|ghp_" -- . ':!*.git*' ':!.zshrc'; then
                echo "⚠️ 审计警告：$dir 包含未过滤敏感信息！"
             else
@@ -93,7 +100,7 @@ syncm4() {
         fi
     done
     
-    # Obsidian 同步
+    # Obsidian 同步与闭环
     curl -X POST "$OBSIDIAN_API_URL/append/" -d "- [x] **M4 同步完成**: $(date)" --silent --output /dev/null
     echo "✨ 审计链路闭环。"
 }
@@ -112,4 +119,4 @@ alias litellm="litellm --model anthropic/qwen-35b-local --api_base http://127.0.
 alias stopq='pkill -f llama-server && echo "✅ 模型服务已彻底停止"'
 
 # 增加一键重启所有服务的功能
-alias relm4="stopq && source ~/.zshrc && q"
+alias relm4="stopq && source ~/.zshrc && q"alias m4-connect="python3 /Users/nusun/M4_Repo/scripts/maintenance/m4_mcp_connect.py"
