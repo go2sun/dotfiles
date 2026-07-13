@@ -31,19 +31,27 @@ def api_key():
         sys.exit("ERROR: GOOGLE_AI_STUDIO_API_KEY not set (source ~/.secrets.env)")
     return k
 
-def embed_text(text: str):
+import time
+
+def embed_text(text: str, tries: int = 6):
     import urllib.request
     body = json.dumps({"content": {"parts": [{"text": text}]}}).encode()
     url = f"{EMBED_URL}?key={api_key()}"
     req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
-    try:
-        with urllib.request.urlopen(req, timeout=30) as r:
-            data = json.load(r)
-        return data["embedding"]["values"]
-    except urllib.error.HTTPError as e:
-        sys.exit(f"EMBED HTTP {e.code}: {e.read().decode()[:300]}")
-    except Exception as e:
-        sys.exit(f"EMBED ERROR: {e}")
+    delay = 4.0
+    for attempt in range(tries):
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                data = json.load(r)
+            return data["embedding"]["values"]
+        except urllib.error.HTTPError as e:
+            if e.code == 429 and attempt < tries - 1:
+                time.sleep(delay)
+                delay *= 1.8  # back off
+                continue
+            sys.exit(f"EMBED HTTP {e.code}: {e.read().decode()[:300]}")
+        except Exception as e:
+            sys.exit(f"EMBED ERROR: {e}")
 
 def chunk_text(text: str):
     text = text.strip()
@@ -74,30 +82,37 @@ def cosine(a, b):
         return 0.0
     return dot / (na * nb)
 
+def _load_existing():
+    if not STORE.exists():
+        return {}, []
+    rows = [json.loads(l) for l in STORE.read_text(encoding="utf-8").splitlines() if l.strip()]
+    done = {(r["file"], r["chunk"]) for r in rows}
+    return done, rows
+
 def cmd_index():
     files = collect_md()
-    print(f"Indexing {len(files)} markdown file(s) from {BRAIN}")
-    rows = []
-    for fp in files:
-        try:
-            text = fp.read_text(encoding="utf-8", errors="ignore")
-        except Exception as e:
-            print(f"  skip {fp}: {e}")
-            continue
-        for i, chunk in enumerate(chunk_text(text)):
-            vec = embed_text(chunk)
-            rows.append({
-                "file": str(fp.relative_to(BRAIN)),
-                "chunk": i,
-                "text": chunk,
-                "vec": vec,
-            })
-            print(f"  {fp.relative_to(BRAIN)} [{i}] -> {len(vec)}d", end="\r")
+    done, rows = _load_existing()
+    print(f"Indexing {len(files)} markdown file(s) from {BRAIN} (resume: {len(done)} already done)")
     STORE.parent.mkdir(parents=True, exist_ok=True)
-    with open(STORE, "w", encoding="utf-8") as f:
-        for r in rows:
-            f.write(json.dumps(r, ensure_ascii=False) + "\n")
-    print(f"\nIndexed {len(rows)} chunks -> {STORE}")
+    added = 0
+    with open(STORE, "a", encoding="utf-8") as f:
+        for fp in files:
+            try:
+                text = fp.read_text(encoding="utf-8", errors="ignore")
+            except Exception as e:
+                print(f"  skip {fp}: {e}")
+                continue
+            rel = str(fp.relative_to(BRAIN))
+            for i, chunk in enumerate(chunk_text(text)):
+                if (rel, i) in done:
+                    continue
+                vec = embed_text(chunk)
+                rec = {"file": rel, "chunk": i, "text": chunk, "vec": vec}
+                f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+                rows.append(rec); added += 1
+                done.add((rel, i))
+                print(f"  {rel} [{i}] -> {len(vec)}d  (total {len(rows)})", end="\r")
+    print(f"\nIndexed {added} new chunks (total {len(rows)}) -> {STORE}")
 
 def cmd_search(query, top=5):
     if not STORE.exists():

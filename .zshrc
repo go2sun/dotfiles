@@ -2,8 +2,20 @@
 source "$HOME/dotfiles/.secrets.env"
 export SYSTEM_NAME="NUSUN"
 
-# 1. 路径一体化
-export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.lmstudio/bin:$HOME/.local/bin:$(npm prefix -g)/bin:/Users/nusun/.opencode/bin:/Users/nusun/.npm-global/bin:$PATH"
+# 路径一体化整合 (M4 视觉审计系统)
+# 1. 设置基础路径：优先系统和 Homebrew
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+
+USER_PATHS=(
+    "$HOME/.local/bin"
+    "$(npm prefix -g)/bin"
+    "$HOME/.lmstudio/bin"
+    "$HOME/.opencode/bin"
+    "$HOME/.npm-global/bin"
+    "$HOME/llama.cpp/build/bin" # 添加这一行，让你在任何位置都能直接执行 llama-server
+)
+
+export PATH="$(IFS=:; echo "${USER_PATHS[*]}"):$PATH"
 
 # 2. VLC 核心环境
 export PYTHON_VLC_LIB_PATH="/Applications/VLC.app/Contents/MacOS/lib/libvlc.dylib"
@@ -43,16 +55,28 @@ cleanm4() {
 }
 
 q() {
-  stopq
+  # 1. 强制杀死可能残留的进程（比单纯调用 stopq 更稳健）
+  # 假设 llama-server 默认监听 9090
+  lsof -ti:9090 | xargs kill -9 2>/dev/null
+
+  # 2. 启动基础服务（排除所有干扰项）
   /Users/nusun/llama.cpp/build/bin/llama-server \
     -m "/Users/nusun/models/llm/Qwythos-9B-Claude-Mythos-5-1M-MTP-Q6_K.gguf" \
-    --jinja --port 9090 \
-    --mcp "/Users/nusun/bin/m4-mcp-lite.sh" \
-    --ctx-size 32768 \
-    --log-disable \
+    --mmproj "/Users/nusun/models/llm/mmproj-Qwythos-9B-Claude-Mythos-5-1M-F16.gguf" \
     -ngl 99 \
-    --temp 0.2 &
+    -c 32768 \
+    -np 1 \
+    --cache-ram 2048 \
+    -fa on \
+    --temp 0.7 \
+    --port 9090
 }
+
+#   --mcp "/Users/nusun/bin/m4-mcp-lite.sh" \
+#   ---log-disable \
+#   --spec-type draft-mtp \
+#   --spec-draft-n-max 2 \
+#   -jinja \
 
 # MCP Chat Command (mcc) - 增加推理模式选择
 mcc() {
@@ -118,16 +142,12 @@ autoload -Uz compinit
 compinit -i
 
 # 4. 别名汇总
-alias cc='call-claude'
-alias ccs='call-claude-stream'
+alias cc="call-claude"
+alias ccs="call-claude-stream"
 alias cs="cleanm4 && syncm4"
-alias reset='~/scripts/reset.sh'
+alias reset="~/scripts/reset.sh"
 alias ghostty="/Applications/Ghostty.app/Contents/MacOS/ghostty"
 alias litellm="litellm --model anthropic/qwen-35b-local --api_base http://127.0.0.1:8080 --port 4000"
-alias stopq='pkill -f llama-server && echo "✅ 模型服务已彻底停止"'
-
-# 增加一键重启所有服务的功能
-alias relm4="stopq && source ~/.zshrc && q"
 
 # M4 视觉审计系统 (最终版) - 自动化同步指令
 syncm4() {
