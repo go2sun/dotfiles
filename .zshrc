@@ -66,25 +66,27 @@ mcc() {
 
 # --- [扩展：M4 视觉审计系统 MCP 大脑连接器] ---
 # 用于将外部 MCP 节点动态挂载至 Claude Desktop 或本地审计环境
+# 1. 大脑连接器函数 (确保已删除对应的 alias)
 m4-connect() {
-    local url=$1
-    local token=$2
-    local name=${3:-"m4-remote-brain"}
-    
-    python3 "/Users/nusun/M4_Repo/scripts/maintenance/m4_mcp_connect.py" "$url" --token "$token" --name "$name"
+    python3 "/Users/nusun/M4_Repo/scripts/maintenance/m4_mcp_connect.py" "$1" --token "$2" --name "${3:-m4-remote-brain}"
 }
 
-# 2. 强化后的 syncm4 (加入自动化审计配置)
+# 2. 强化后的 syncm4 (自动审计与大脑同步)
 syncm4() {
     local COMMIT_MSG="M4 审计同步: $(date '+%Y-%m-%d %H:%M:%S')"
     echo "🛡️ [M4 审计] 启动全量同步..."
 
-    # 预先同步 MCP 配置(如果存在于环境)
+    # 预先同步 MCP 配置
     if [ -f "$HOME/dotfiles/.mcp_config" ]; then
         echo "🔗 正在根据 dotfiles 映射远程大脑..."
-        xargs -a "$HOME/dotfiles/.mcp_config" m4-connect
+        # 逐行读取配置，避免 xargs 在处理复杂参数时的语法错误
+        while read -r url token name || [ -n "$url" ]; do
+            [[ -z "$url" || "$url" =~ ^# ]] && continue
+            m4-connect "$url" "$token" "$name"
+        done < "$HOME/dotfiles/.mcp_config"
     fi
 
+    # 代码仓库同步
     local sync_dirs=("$HOME/M4_Repo" "$HOME/dotfiles" "$HOME/brain")
     for dir in "${sync_dirs[@]}"; do
         if [ -d "$dir/.git" ]; then
@@ -100,7 +102,6 @@ syncm4() {
         fi
     done
     
-    # Obsidian 同步与闭环
     curl -X POST "$OBSIDIAN_API_URL/append/" -d "- [x] **M4 同步完成**: $(date)" --silent --output /dev/null
     echo "✨ 审计链路闭环。"
 }
@@ -119,4 +120,4 @@ alias litellm="litellm --model anthropic/qwen-35b-local --api_base http://127.0.
 alias stopq='pkill -f llama-server && echo "✅ 模型服务已彻底停止"'
 
 # 增加一键重启所有服务的功能
-alias relm4="stopq && source ~/.zshrc && q"alias m4-connect="python3 /Users/nusun/M4_Repo/scripts/maintenance/m4_mcp_connect.py"
+alias relm4="stopq && source ~/.zshrc && q"
