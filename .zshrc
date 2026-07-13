@@ -79,7 +79,6 @@ syncm4() {
     # 预先同步 MCP 配置
     if [ -f "$HOME/dotfiles/.mcp_config" ]; then
         echo "🔗 正在根据 dotfiles 映射远程大脑..."
-        # 逐行读取配置，避免 xargs 在处理复杂参数时的语法错误
         while read -r url token name || [ -n "$url" ]; do
             [[ -z "$url" || "$url" =~ ^# ]] && continue
             m4-connect "$url" "$token" "$name"
@@ -91,17 +90,25 @@ syncm4() {
     for dir in "${sync_dirs[@]}"; do
         if [ -d "$dir/.git" ]; then
             cd "$dir" || continue
-            git add . && git commit -m "$COMMIT_MSG" > /dev/null 2>&1
-            git push origin main > /dev/null 2>&1
             
-            if git grep -IqE "AIza|ghp_" -- . ':!*.git*' ':!.zshrc'; then
-               echo "⚠️ 审计警告：$dir 包含未过滤敏感信息！"
+            # 1. 扫描当前工作区敏感信息 (白盒定位)
+            # 使用 grep 仅扫描当前磁盘文件，避开 .git 历史干扰
+            local leaked_files=$(grep -rIEl "AIza|ghp_" . --exclude-dir=.git --exclude-dir=.obsidian --exclude=*.log 2>/dev/null)
+            
+            if [ -n "$leaked_files" ]; then
+               echo "⚠️ 审计警告：$dir 发现以下敏感文件："
+               echo "$leaked_files" | sed 's/^/   /'
             else
                echo "✅ $dir 扫描安全。"
             fi
+
+            # 2. 执行同步
+            git add . && git commit -m "$COMMIT_MSG" > /dev/null 2>&1
+            git push origin main > /dev/null 2>&1
         fi
     done
     
+    # 3. Obsidian 同步与闭环
     curl -X POST "$OBSIDIAN_API_URL/append/" -d "- [x] **M4 同步完成**: $(date)" --silent --output /dev/null
     echo "✨ 审计链路闭环。"
 }
