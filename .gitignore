@@ -5,3 +5,4 @@
 config/api_keys.json
 secret_configs/
 .DS_Store
+.firecrawl
