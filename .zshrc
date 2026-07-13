@@ -63,8 +63,8 @@ syncm4() {
             cd "$dir" && git add . && git commit -m "$COMMIT_MSG" > /dev/null 2>&1
             git push origin main
             
-            # 敏感信息检查
-            if grep -rE "AIza|ghp_" . > /dev/null; then
+            # 敏感信息检查 (已优化：跳过 .zshrc 本身及 Git 历史文件对象，消除自检误报)
+            if grep -rE --exclude=".zshrc" --exclude-dir=".git" "AIza|ghp_" . > /dev/null 2>&1; then
                echo "⚠️ 警告：检测到疑似敏感凭证泄露 (在 $dir 中)！"
             else
                echo "✅ $dir 扫描安全。"
