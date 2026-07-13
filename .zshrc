@@ -128,3 +128,24 @@ alias stopq='pkill -f llama-server && echo "✅ 模型服务已彻底停止"'
 
 # 增加一键重启所有服务的功能
 alias relm4="stopq && source ~/.zshrc && q"
+
+# M4 视觉审计系统 (最终版) - 自动化同步指令
+syncm4() {
+    echo "==== 开始同步 M4 视觉审计系统 (最终版) ===="
+    
+    echo ">>> 正在同步知识库 (~/brain)..."
+    cd ~/brain || return
+    git add .
+    # 允许空提交失败但不中断流程
+    git commit -m "auto-sync: M4 system backup" 
+    git push
+    
+    echo ">>> 正在同步配置文件 (~/dotfiles)..."
+    cd ~/dotfiles || return
+    git add .
+    git commit -m "auto-sync: M4 dotfiles backup"
+    git push
+    
+    cd - > /dev/null
+    echo "==== 同步任务已全部完成 ===="
+}
