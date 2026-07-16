@@ -32,3 +32,4 @@ Brewfile.old.*
 config/raycast/
 # install 备份
 .dotfiles-backup/
+skills/image-ocr/img-ocr

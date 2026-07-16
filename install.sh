@@ -73,6 +73,18 @@ if [ -f "$DOTFILES/config/ssh_config" ]; then
   chmod 600 "$HOME/.ssh/config" 2>/dev/null || true
 fi
 
+# Hermes 外挂 skills (视觉能力等)
+if [ -d "$DOTFILES/skills" ]; then
+  for s in "$DOTFILES/skills"/*/; do
+    [ -d "$s" ] && link "${s%/}" "$HOME/.hermes/skills/$(basename "$s")"
+  done
+  # 编译 image-ocr 二进制(离线兜底)
+  if [ -f "$HOME/.hermes/skills/image-ocr/img-ocr.swift" ] && command -v swiftc &>/dev/null; then
+    ( cd "$HOME/.hermes/skills/image-ocr" && swiftc -O img-ocr.swift -o img-ocr 2>/dev/null ) \
+      && ok "image-ocr 已编译" || warn "image-ocr 编译跳过(需 Xcode CLT)"
+  fi
+fi
+
 # ---------- 4. 私密文件提醒 ----------
 info "[4/5] 私密文件检查 (不在 git 仓库中)"
 [ -f "$HOME/.secrets.env" ] || [ -f "$DOTFILES/.secrets.env" ] \
