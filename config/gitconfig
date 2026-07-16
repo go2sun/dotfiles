@@ -1,0 +1,21 @@
+# ~/.gitconfig 模板 (由 dotfiles 管理) — 双账号目录级身份
+# 默认身份 = 个人 go2sun; ~/work/ 下自动切换为工作身份
+
+[user]
+	name = go2sun
+	email = go2sun@gmail.com
+[includeIf "gitdir:~/work/"]
+	path = ~/.gitconfig-work
+[credential]
+	helper = osxkeychain
+[init]
+	defaultBranch = main
+[filter "lfs"]
+	required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+[http]
+	postBuffer = 524288000
+[safe]
+	directory = *

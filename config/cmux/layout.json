@@ -1,0 +1,9 @@
+# 示例：自动化启动命令（您可以将其加入到您的启动脚本中）
+# 1. 启动主工作区
+cmux split-window -h "cd /path/to/m4-project && bash start_main.sh"
+# 2. 启动右上角监控/辅助
+cmux select-pane -R
+cmux split-window -v "tail -f system.log"
+# 3. 启动右下角 asitop
+cmux select-pane -D
+cmux send-keys "sudo asitop" C-m

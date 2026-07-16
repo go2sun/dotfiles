@@ -1,0 +1,96 @@
+# ==========================================================
+# nusun's M4 Mac Mini: Triple-Screen Sovereign Config (V3.0)
+# ==========================================================
+config-version = 2
+
+# 鼠标跟随焦点，让眼神、光标、意图合一
+on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
+
+# 禁用规范化，保留纯粹手动布局控制感
+enable-normalization-flatten-containers = false
+enable-normalization-opposite-orientation-for-nested-containers = false
+
+# --- 1. 物理显示器固定 ---
+[workspace-to-monitor-force-assignment]
+1 = 'U270Pro'       # 核心区
+2 = 'USB DISP (1)'  # 支撑区
+3 = 'USB DISP (2)'  # 扩展区
+
+# --- 2. 视觉零噪音 ---
+[gaps]
+inner.horizontal = 0
+inner.vertical   = 0
+outer.left       = 0
+outer.bottom     = 0
+outer.top        = 0
+outer.right      = 0
+
+# --- 3. 核心交互 (Main Mode) ---
+[mode.main.binding]
+
+# 【指挥入口】使用分号避开 Finder 冲突。按一下进入指挥模式。
+alt-shift-semicolon = 'mode service'
+
+# 终端唤起
+alt-enter = '''exec-and-forget osascript -e '
+tell application "Terminal"
+    do script
+    activate
+end tell'
+'''
+
+# 焦点导航 (HJKL)
+alt-h = 'focus --boundaries-action wrap-around-the-workspace left'
+alt-j = 'focus --boundaries-action wrap-around-the-workspace down'
+alt-k = 'focus --boundaries-action wrap-around-the-workspace up'
+alt-l = 'focus --boundaries-action wrap-around-the-workspace right'
+
+# 跨屏挪动
+alt-ctrl-shift-left = 'move-node-to-monitor --wrap-around left'
+alt-ctrl-shift-right = 'move-node-to-monitor --wrap-around right'
+
+# 基础工作区跳转 (保留 1 和 2，如果 3 冲突严重，建议也通过 Service Mode 跳转)
+alt-1 = 'workspace 1'
+alt-2 = 'workspace 2'
+# alt-3 暂时注释掉，以兼容 Chrome，改由 Service 模式控制
+# alt-3 = 'workspace 3'
+
+# --- 4. 指挥官模式 (Service Mode) ---
+[mode.service.binding]
+# 工作区跳转 (彻底解决 Alt+3 冲突)
+1 = ['workspace 1', 'mode main']
+2 = ['workspace 2', 'mode main']
+3 = ['workspace 3', 'mode main']
+
+# 系统维护
+u = ["exec-and-forget ~/scripts/up.sh", 'mode main']
+o = ["exec-and-forget shortcuts run 'OCR'", 'mode main']
+r = ['reload-config', 'mode main']
+
+# 【核心修正】居中并浮动
+c = ['layout floating tiling', 'move-node-to-monitor --center', 'mode main']
+
+# 退出机制
+esc = 'mode main'
+enter = 'mode main'
+
+# --- 5. 自动化约束 (Apps) ---
+[[on-window-detected]]
+if.app-id = 'com.google.Chrome'
+run = ['move-node-to-workspace 1', 'layout tiling']
+
+[[on-window-detected]]
+if.app-id = 'com.apple.Terminal'
+run = ['move-node-to-workspace 2']
+
+[[on-window-detected]]
+if.app-id = 'com.apple.finder'
+run = ['move-node-to-workspace 2']
+
+[[on-window-detected]]
+if.app-id = 'com.microsoft.VSCodeInsiders'
+run = ['move-node-to-workspace 3']
+
+[[on-window-detected]]
+if.app-id = 'com.alexcding.geminidesktop'
+run = ['move-node-to-workspace 3']

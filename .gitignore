@@ -27,3 +27,8 @@ m4_distilled_core/
 m4_integrated_vfinal/
 openclaw/
 Brewfile.old.*
+
+# 应用缓存(体积大,用各自云同步)
+config/raycast/
+# install 备份
+.dotfiles-backup/

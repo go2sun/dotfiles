@@ -1,0 +1,13 @@
+# --- 视觉基础 ---
+background-opacity = 0.95
+theme = "tokyonight"
+font-family = "JetBrainsMono Nerd Font"
+font-size = 14
+
+# --- 行为 ---
+quit-after-last-window-closed = true
+window-theme = "dark"
+
+# --- 快捷键 ---
+keybind = "ctrl+shift+s=text:syncm4\n"
+keybind = "ctrl+shift+k=text:stopq\n"

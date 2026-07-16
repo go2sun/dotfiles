@@ -1,0 +1,4 @@
+# ~/.gitconfig-work — 工作身份 sunusun-me (由 dotfiles 管理)
+[user]
+	name = sunusun-me
+	email = sunusun-me@gmail.com
