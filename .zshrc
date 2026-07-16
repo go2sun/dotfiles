@@ -1,10 +1,22 @@
 # ========== [ M4 视觉审计系统 (NUSUN 终极完美版) ] ==========
 source "$HOME/dotfiles/.secrets.env"
 export SYSTEM_NAME="NUSUN"
+export BRAIN_DIR="$HOME/brain"
 
 # 路径一体化整合 (M4 视觉审计系统)
 # 1. 设置基础路径：优先系统和 Homebrew
 export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+
+export CF_API_TOKEN="«redacted-old-cf-token»"
+
+
+
+# 统一入口配置
+gbt() { ~/scripts/brain-think.sh "$1" }
+gbm() { ~/scripts/brain-memory.sh }
+gbd() { ~/scripts/brain-dream.sh }
+gbl() { ~/scripts/brain-loop.sh }
+
 
 USER_PATHS=(
     "$HOME/.local/bin"
@@ -27,22 +39,47 @@ export QWEN_MODEL_PATH="/Users/nusun/models/llm/Qwen3.6-35B-A3B-Uncensored-Hauha
 export DISABLE_UVLOOP=True
 
 # --- [审计与推理链路] ---
-call-claude() {
+
+# 极速非流式版本
+cc() {
+    local prompt="$1"
+    # 直接发送请求，不再调用 /v1/models 浪费时间
     curl -s http://127.0.0.1:9090/v1/chat/completions \
     -H "Content-Type: application/json" \
-    -d "{ \"model\": \"Claude\", \"messages\": [{\"role\": \"user\", \"content\": \"$1\"}], \"stream\": false }" \
+    -d "{\"model\": \"default\", \"messages\": [{\"role\": \"user\", \"content\": \"${prompt}\"}], \"stream\": false}" \
     | jq -r '.choices[0].message.content'
 }
 
-call-claude-stream() {
+# 极速流式版本（带实时思考渲染）
+ccs() {
+    local prompt="$1"
+    local in_think=0
+
     curl -sN http://127.0.0.1:9090/v1/chat/completions \
     -H "Content-Type: application/json" \
-    -d "{ \"model\": \"Claude\", \"messages\": [{\"role\": \"user\", \"content\": \"$1\"}], \"stream\": true }" \
+    -d "{\"model\": \"default\", \"messages\": [{\"role\": \"user\", \"content\": \"${prompt}\"}], \"stream\": true}" \
     | while read -r line; do
-        content=$(echo "$line" | sed 's/^data: //' | jq -r '.choices[0].delta.content // empty' 2>/dev/null)
+        [[ "$line" == "data: [DONE]" ]] && break
+        
+        # 提取当前 Token
+        local content=$(echo "$line" | sed 's/^data: //' | jq -r '.choices[0].delta.content // empty' 2>/dev/null)
+        [[ -z "$content" ]] && continue
+
+        # 处理思考标签的颜色切换（让终端动起来）
+        if [[ "$content" == *"<think>"* ]]; then
+            in_think=1
+            echo -ne "\033[90m[思考中] " # 灰色显示思考
+            content=${content//"<think>"/}
+        fi
+
         echo -ne "$content"
+
+        if [[ "$content" == *"</think>"* ]]; then
+            in_think=0
+            echo -ne "\033[0m\n" # 恢复颜色并换行
+        fi
     done
-    echo ""
+    echo -ne "\033[0m\n" # 确保颜色重置
 }
 
 # --- [系统清理与防御] ---
@@ -54,29 +91,71 @@ cleanm4() {
     echo "✨ 清理完成。"
 }
 
-q() {
-  # 1. 强制杀死可能残留的进程（比单纯调用 stopq 更稳健）
-  # 假设 llama-server 默认监听 9090
-  lsof -ti:9090 | xargs kill -9 2>/dev/null
+# ==========================================================
+# M4 视觉审计系统 (NUSUN 终极优化版)
+# ==========================================================
 
-  # 2. 启动基础服务（排除所有干扰项）
-  /Users/nusun/llama.cpp/build/bin/llama-server \
-    -m "/Users/nusun/models/llm/Qwythos-9B-Claude-Mythos-5-1M-MTP-Q6_K.gguf" \
-    --mmproj "/Users/nusun/models/llm/mmproj-Qwythos-9B-Claude-Mythos-5-1M-F16.gguf" \
-    -ngl 99 \
-    -c 32768 \
-    -np 1 \
-    --cache-ram 2048 \
-    -fa on \
-    --temp 0.7 \
-    --port 9090
+# 1. 核心 AI 服务启动器 (q)
+# 静默后台启动器
+q() {
+    # 1. 检查端口是否占用
+    if lsof -i:9090 > /dev/null; then
+        echo "⚠️ M4 审计服务已经在运行 (PID: $(lsof -ti:9090))"
+        return
+    fi
+
+    # 2. 使用 nohup 将其彻底甩到后台，并忽略所有输出
+    echo "🚀 M4 视觉审计系统正在后台静默启动..."
+    nohup /Users/nusun/llama.cpp/build/bin/llama-server \
+        -m "/Users/nusun/models/llm/Qwythos-9B-Claude-Mythos-5-1M-MTP-Q4_K_M.gguf" \
+        --mmproj "/Users/nusun/models/llm/mmproj-Qwythos-9B-Claude-Mythos-5-1M-F16.gguf" \
+        -ngl 99 -c 32768 -np 1 --cache-ram 4096 \
+        -fa on --temp 0.7 --port 9090 > /dev/null 2>&1 &
+    
+    echo "✨ 启动成功！你可以直接执行 audit 命令了。"
 }
 
-#   --mcp "/Users/nusun/bin/m4-mcp-lite.sh" \
-#   ---log-disable \
-#   --spec-type draft-mtp \
-#   --spec-draft-n-max 2 \
-#   -jinja \
+# 2. 审计函数 (audit) - 优化了流处理与错误屏蔽
+audit() {
+    local task="$1"
+    local sys_prompt="你现在是M4审计系统。要求：1.用中文输出。2.输出结构严谨，包含：【分析目标】、【审计发现】、【风险等级】、【整改建议】。"
+    
+    curl -sN -X POST http://127.0.0.1:9090/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -d "{\"model\": \"default\", \"messages\": [{\"role\": \"system\", \"content\": \"$sys_prompt\"}, {\"role\": \"user\", \"content\": \"$task\"}], \"stream\": true}" \
+    2>/dev/null | while read -r line; do
+        [[ "$line" == "data: [DONE]" ]] && break
+        # 通过 sed 快速提取内容，tr -d '\\n' 保持流式美观
+        echo "$line" | sed -n 's/.*"content":"\([^"]*\)".*/\1/p' | tr -d '\n'
+    done
+    echo ""
+}
+
+# 3. 同步与清理逻辑 (syncm4) - 保持了你原有的闭环逻辑
+syncm4() {
+    local COMMIT_MSG="M4 审计同步: $(date '+%Y-%m-%d %H:%M:%S')"
+    echo "🛡️ [M4 审计] 启动全量同步..."
+    
+    # 代码仓库同步
+    local sync_dirs=("$HOME/M4_Repo" "$HOME/dotfiles" "$HOME/brain")
+    for dir in "${sync_dirs[@]}"; do
+        if [ -d "$dir/.git" ]; then
+            cd "$dir" || continue
+            # 仅扫描敏感信息
+            local leaked=$(grep -rIEl "AIza|ghp_" . --exclude-dir=.git --exclude=*.log 2>/dev/null)
+            [ -n "$leaked" ] && echo "⚠️ 审计警告: $dir 发现敏感文件。" || echo "✅ $dir 扫描安全。"
+            git add . && git commit -m "$COMMIT_MSG" >/dev/null 2>&1
+            git push origin main >/dev/null 2>&1
+        fi
+    done
+    curl -X POST "$OBSIDIAN_API_URL/append/" -d "- [x] **M4 同步完成**: $(date)" --silent --output /dev/null
+    echo "✨ 审计链路闭环。"
+}
+
+# 4. 别名汇总
+alias cs="cleanm4 && syncm4"
+alias reset="~/scripts/reset.sh"
+# 确保不再有 alias cc 或 alias ccs 冲突，直接删除旧定义
 
 # MCP Chat Command (mcc) - 增加推理模式选择
 mcc() {
@@ -95,77 +174,61 @@ m4-connect() {
     python3 "/Users/nusun/M4_Repo/scripts/maintenance/m4_mcp_connect.py" "$1" --token "$2" --name "${3:-m4-remote-brain}"
 }
 
-# 2. 强化后的 syncm4 (自动审计与大脑同步)
-syncm4() {
-    local COMMIT_MSG="M4 审计同步: $(date '+%Y-%m-%d %H:%M:%S')"
-    echo "🛡️ [M4 审计] 启动全量同步..."
-
-    # 预先同步 MCP 配置
-    if [ -f "$HOME/dotfiles/.mcp_config" ]; then
-        echo "🔗 正在根据 dotfiles 映射远程大脑..."
-        while read -r url token name || [ -n "$url" ]; do
-            [[ -z "$url" || "$url" =~ ^# ]] && continue
-            m4-connect "$url" "$token" "$name"
-        done < "$HOME/dotfiles/.mcp_config"
-    fi
-
-    # 代码仓库同步
-    local sync_dirs=("$HOME/M4_Repo" "$HOME/dotfiles" "$HOME/brain")
-    for dir in "${sync_dirs[@]}"; do
-        if [ -d "$dir/.git" ]; then
-            cd "$dir" || continue
-            
-            # 1. 扫描当前工作区敏感信息 (白盒定位)
-            # 使用 grep 仅扫描当前磁盘文件，避开 .git 历史干扰
-            local leaked_files=$(grep -rIEl "AIza|ghp_" . --exclude-dir=.git --exclude-dir=.obsidian --exclude=*.log 2>/dev/null)
-            
-            if [ -n "$leaked_files" ]; then
-               echo "⚠️ 审计警告：$dir 发现以下敏感文件："
-               echo "$leaked_files" | sed 's/^/   /'
-            else
-               echo "✅ $dir 扫描安全。"
-            fi
-
-            # 2. 执行同步
-            git add . && git commit -m "$COMMIT_MSG" > /dev/null 2>&1
-            git push origin main > /dev/null 2>&1
-        fi
-    done
-    
-    # 3. Obsidian 同步与闭环
-    curl -X POST "$OBSIDIAN_API_URL/append/" -d "- [x] **M4 同步完成**: $(date)" --silent --output /dev/null
-    echo "✨ 审计链路闭环。"
-}
-
 # --- [配置初始化] ---
 autoload -Uz compinit
 compinit -i
 
+gb-think() {
+    local query="$1"
+    local brain_dir="$HOME/brain"
+    
+    # 1. READ: 预扫描相关上下文 (Context Injection)
+    local context=$(grep -rh "$query" "$brain_dir/concepts/" | head -n 10)
+    
+    # 2. THINK: 审计并合成
+    local result=$(audit "基于以下背景知识：$context，审计问题：$query")
+    
+    # 3. WRITE: 自动写入归档
+    echo -e "\n## $(date)\n$result" >> "$brain_dir/timeline/recent.md"
+    echo "$result"
+}
+
+# --- M4 视觉审计系统 (最终版) 自动化工作流 ---
+
+function csm() {
+  echo ">>> [M4 系统] 正在同步代码并封存当前工作台..."
+  
+  # 1. 执行原有的同步逻辑 (syncm4)
+  # 确保代码已推送到 GitHub 并同步 dotfiles
+  syncm4
+  
+  # 检查 syncm4 是否执行成功
+  if [ $? -eq 0 ]; then
+    echo ">>> [M4 系统] 代码同步完成，开始保存快照..."
+    crex save MacMiniM4
+    echo ">>> [M4 系统] 快照 'MacMiniM4' 已封存。"
+  else
+    echo ">>> [!] 警告：syncm4 同步失败，快照保存已中止，以防状态不一致。"
+  fi
+}
+
+function crsm() {
+  echo ">>> [M4 系统] 正在还原工作台..."
+  crex restore MacMiniM4
+  echo ">>> [M4 系统] 还原完成，欢迎回来。"
+}
+
+
 # 4. 别名汇总
-alias cc="call-claude"
-alias ccs="call-claude-stream"
+
 alias cs="cleanm4 && syncm4"
 alias reset="~/scripts/reset.sh"
 alias ghostty="/Applications/Ghostty.app/Contents/MacOS/ghostty"
 alias litellm="litellm --model anthropic/qwen-35b-local --api_base http://127.0.0.1:8080 --port 4000"
 
-# M4 视觉审计系统 (最终版) - 自动化同步指令
-syncm4() {
-    echo "==== 开始同步 M4 视觉审计系统 (最终版) ===="
-    
-    echo ">>> 正在同步知识库 (~/brain)..."
-    cd ~/brain || return
-    git add .
-    # 允许空提交失败但不中断流程
-    git commit -m "auto-sync: M4 system backup" 
-    git push
-    
-    echo ">>> 正在同步配置文件 (~/dotfiles)..."
-    cd ~/dotfiles || return
-    git add .
-    git commit -m "auto-sync: M4 dotfiles backup"
-    git push
-    
-    cd - > /dev/null
-    echo "==== 同步任务已全部完成 ===="
-}
+
+
+alias csm="crex save MacMiniM4"
+alias crsm="crex restore MacMiniM4"
+
+alias py="noglob $HOME/youtube-auto-dub-v2/py"

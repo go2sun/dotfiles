@@ -1,8 +1,28 @@
+# === 密钥/敏感信息(绝不提交) ===
 *.key
 *.env
 .gemini_key
 .git-credentials
 config/api_keys.json
 secret_configs/
-.DS_Store
 .firecrawl
+.secrets.env
+
+# === macOS 系统垃圾 ===
+.DS_Store
+**/.DS_Store
+.AppleDouble
+.LSOverride
+
+# === 日志/临时文件 ===
+*.log
+logs/
+audit_log.txt
+audit_performance.log
+tmux-client-*.log
+
+# === 项目产物(不属于 dotfiles) ===
+llama.cpp-omni/
+m4_distilled_core/
+m4_integrated_vfinal/
+openclaw/
