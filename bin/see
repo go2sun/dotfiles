@@ -1,0 +1,12 @@
+#!/bin/bash
+# see — 让 Agent 直接看你的屏幕(截全屏 + 返回路径, 由 Agent 侧做视觉分析)
+# 用法: see           截全屏存 /tmp/see.png 并打印路径
+#       see <win>     截某窗口(暂留接口)
+# 依赖: macOS screencapture(macOS 自带), 需屏幕录制权限(已授权 cmux)
+# 安全: 截图只存本地 /tmp, 不自动外传
+set -uo pipefail
+OUT="/tmp/see.png"
+screencapture -x "$OUT" 2>/dev/null && echo "已截屏: $OUT ($(wc -c < "$OUT") 字节)" || { echo "❌ 截屏失败(可能需屏幕录制权限)" >&2; exit 1; }
+# 顺手也存一张到剪贴板, 方便你偶尔要发
+# screencapture -x -c  # 如需剪贴板版取消注释
+echo "$OUT"
