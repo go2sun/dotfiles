@@ -85,6 +85,22 @@ if [ -d "$DOTFILES/skills" ]; then
   fi
 fi
 
+# ---------- 3.5 个人 bin 脚本 ----------
+info "[3.5] 同步个人 bin 脚本 ($HOME/bin)"
+mkdir -p "$HOME/bin"
+if [ -d "$DOTFILES/bin" ]; then
+  for s in "$DOTFILES/bin"/*; do
+    name="$(basename "$s")"
+    if [ -e "$HOME/bin/$name" ]; then
+      ok "已存在,跳过: $name"
+    else
+      cp "$s" "$HOME/bin/$name" && chmod +x "$HOME/bin/$name" \
+        && ok "已部署: $name" || warn "部署失败: $name"
+    fi
+  done
+  ok "个人 bin 脚本就绪 ($HOME/bin 已在 .zshrc 的 PATH 中)"
+fi
+
 # ---------- 4. 私密文件提醒 ----------
 info "[4/5] 私密文件检查 (不在 git 仓库中)"
 [ -f "$HOME/.secrets.env" ] || [ -f "$DOTFILES/.secrets.env" ] \

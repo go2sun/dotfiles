@@ -25,6 +25,7 @@ USER_PATHS=(
     "$HOME/.opencode/bin"
     "$HOME/.npm-global/bin"
     "$HOME/llama.cpp/build/bin" # 添加这一行，让你在任何位置都能直接执行 llama-server
+    "$HOME/bin" # 统一密文节点 / 密钥收拢脚本
 )
 
 export PATH="$(IFS=:; echo "${USER_PATHS[*]}"):$PATH"
@@ -232,3 +233,4 @@ alias csm="crex save MacMiniM4"
 alias crsm="crex restore MacMiniM4"
 
 alias py="noglob $HOME/youtube-auto-dub-v2/py"
+alias dub="noglob $HOME/youtube-auto-dub-v2/py"
