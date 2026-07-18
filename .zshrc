@@ -234,3 +234,6 @@ alias crsm="crex restore MacMiniM4"
 
 alias py="noglob $HOME/youtube-auto-dub-v2/py"
 alias dub="noglob $HOME/youtube-auto-dub-v2/py"
+
+# dinotty MCP 用(从密钥节点注入, 不写明文)
+export DINOTTY_TOKEN="$(secret get dinotty-token)"
