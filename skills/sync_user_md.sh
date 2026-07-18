@@ -22,6 +22,7 @@ PROJECTS=(
   "$HOME/Documents/Project/GBrain"
   "$HOME/Documents/Project/MacMiniM4"
   "$HOME/Documents/Project/SB"
+  "$HOME/Documents/Project/Cli"
   "$HOME/youtube-auto-dub-v2"
 )
 
