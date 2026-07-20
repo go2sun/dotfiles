@@ -120,6 +120,16 @@ fi
 # ---------- 目录骨架 ----------
 mkdir -p "$HOME/personal" "$HOME/work"
 
+# ---------- 6. 个人服务 (用户级后台, 如 Fast Note Sync) ----------
+info "[6/6] 个人服务"
+if [ -f "$DOTFILES/scripts/install-fast-note.sh" ]; then
+  bash "$DOTFILES/scripts/install-fast-note.sh" \
+    && ok "个人服务就绪 (Fast Note Sync @ 127.0.0.1:9000)" \
+    || warn "个人服务安装跳过/失败 (可能离线, 可稍后单独跑 scripts/install-fast-note.sh)"
+else
+  warn "无 install-fast-note.sh, 跳过个人服务"
+fi
+
 echo -e "${G}================================================${N}"
 ok "完成! 建议:"
 echo "  1. 缺失的私钥/.secrets.env 请手动补齐 (见上方 ! 提示)"

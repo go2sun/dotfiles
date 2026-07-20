@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.haierkeys.fast-note</string>
+    <key>WorkingDirectory</key>
+    <string>/Users/nusun/fast-note</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/nusun/fast-note/fast-note-sync-service</string>
+        <string>run</string>
+        <string>-c</string>
+        <string>/Users/nusun/fast-note/config/config.yaml</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/Users/nusun/fast-note/storage/log/launchd.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/nusun/fast-note/storage/log/launchd.err.log</string>
+    <key>ProcessType</key>
+    <string>Interactive</string>
+</dict>
+</plist>
