@@ -33,3 +33,9 @@ config/raycast/
 # install 备份
 .dotfiles-backup/
 skills/image-ocr/img-ocr
+
+# === dotfiles 编辑备份(agent/手动改前留的 checkpoint, 不进 git) ===
+.zshrc.bak*
+.zshrc.pre-*
+*.pre-omz-*
+*.pre-tmux-*

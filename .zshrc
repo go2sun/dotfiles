@@ -1,3 +1,11 @@
+# ========== [ Oh My Zsh 启用段 ] ==========
+export ZSH="$HOME/.oh-my-zsh"
+# 最小默认配置: 仅启用 OMZ 框架本身, 不额外加载插件以保持资源占用基准纯净
+ZSH_THEME=""
+plugins=(git z sudo extract)
+source "$ZSH/oh-my-zsh.sh"
+# (启用后用户自定义 alias/function 在此段之后仍完全生效)
+
 # ========== [ M4 视觉审计系统 (NUSUN 终极完美版) ] ==========
 source "$HOME/dotfiles/.secrets.env"
 export SYSTEM_NAME="NUSUN"
@@ -12,6 +20,8 @@ export CF_API_TOKEN="«redacted-old-cf-token»"
 
 
 # 统一入口配置
+# 清掉 OMZ git 插件占用的同名 alias, 避免与下面的 brain 系列函数冲突(parse error)
+unalias gbm gbd gbl 2>/dev/null
 gbt() { ~/scripts/brain-think.sh "$1" }
 gbm() { ~/scripts/brain-memory.sh }
 gbd() { ~/scripts/brain-dream.sh }
@@ -232,8 +242,91 @@ alias litellm="litellm --model anthropic/qwen-35b-local --api_base http://127.0.
 alias csm="crex save MacMiniM4"
 alias crsm="crex restore MacMiniM4"
 
-alias py="noglob $HOME/youtube-auto-dub-v2/py"
-alias dub="noglob $HOME/youtube-auto-dub-v2/py"
+# ========== CliBrain 知识库快捷入口 ==========
+# 关 banghist: 让 ! 变普通字符, capture 整句无引号可直接敲(含中文感叹号)
+unsetopt banghist
+alias kc='kb capture '
+alias ks='kb search '
+alias kn='kb new '
+alias kd='kb doctor'
+alias ki='kb index '
+alias ka='kb ask '
+alias kg='kb grep '
+# kp: 剪贴板内容一键入库(⌘C 后 kp 即可)
+alias kp='pbpaste | kb capture '
+# sou: 重新加载 zshrc 配置(用函数, 避免 global alias 选项坑)
+sou() { source ~/dotfiles/.zshrc }
+# 子命令补全: kb <Tab> 列出 new/capture/search...
+_kb() {
+  local -a subcmds
+  subcmds=(
+    'new:新建笔记(带 frontmatter 模板)'
+    'capture:随手记进 inbox(最高频)'
+    'grep:ripgrep 直通(精确串/报错)'
+    'doctor:健康检查'
+    'index:建/更新索引(--full 推倒重建)'
+    'ask:语义+RAG 问答(需起 embedding/LLM 服务)'
+    'search:BM25 检索(主题, --phrase 短语, --fzf 预览)'
+    'notes-pull:Apple Notes 单向汇入(手动)'
+  )
+  _describe 'subcommand' subcmds
+}
+compdef _kb kb
+
+
+# youtube-auto-dub 统一配音入口 (V1/V2/V3 体验一致)
+# cd 进任一版本目录后, 三命令等价: py/dub/python <URL> 均一键配音
+# python 非URL参数会透传给真 python3, 不影响日常用途
+alias py="noglob $HOME/bin/dub-dispatch py"
+alias dub="noglob $HOME/bin/dub-dispatch dub"
+python() { "$HOME/bin/dub-dispatch" python "$@"; }
 
 # dinotty MCP 用(从密钥节点注入, 不写明文)
 export DINOTTY_TOKEN="$(secret get dinotty-token)"
+
+# Hermes Agent — ensure ~/.local/bin is on PATH
+export PATH="$HOME/.local/bin:$PATH"
+
+# >>> Claude Code Haha PATH >>>
+export PATH="$HOME/.local/bin:$PATH"
+# <<< Claude Code Haha PATH <<<
+# Obsidian REST API 密钥: 从本地 Keychain(login) 注入, 不落盘明文
+# 条目: secret:obsidian-rest-key (secret set obsidian-rest-key '<值>')
+export OBSIDIAN_API_SECRET="$(secret get obsidian-rest-key 2>/dev/null || true)"
+
+# 通用长音视频转写/知识提炼流水线 — 实例化与跳转
+# 模板真身: ~/Documents/Project/youtube-auto-dub/youtube_auto_dub-prompt/media-pipeline-template
+# 用法: np <主题> <音视频路径>  例: np ai-lecture /Volumes/ORICO/raw/lec.mkv
+#      dp                        跳到统一管理目录(模板+样例)
+np() {
+  local base="$HOME/Documents/Project/youtube-auto-dub/youtube_auto_dub-prompt"
+  local tpl="$base/media-pipeline-template/new_project.sh"
+  [ -f "$tpl" ] || { echo "❌ 模板脚本缺失: $tpl" >&2; return 1 }
+  "$tpl" "$@"
+}
+# newproj: np 的兼容别名(主用 np, 老习惯也能用)
+newproj() { np "$@"; }
+# dp: cd 进流水线统一管理目录(模板+样例都在这), 极短导航替代 dubproj
+dp() { cd "$HOME/Documents/Project/youtube-auto-dub/youtube_auto_dub-prompt" || return 1; }
+
+ 
+
+# >>> grok installer >>>
+export PATH="$HOME/.grok/bin:$PATH"
+fpath=(~/.grok/completions/zsh $fpath)
+autoload -Uz compinit && compinit -C
+# <<< grok installer <<<
+
+# ========== [ tmux 一键接入 (配合 Ghostty super+t) ] ==========
+# 不在 tmux 会话内 -> 进 main(没有就新建); 已在 tmux 内 -> 提示防嵌套
+tta() {
+  if [ -n "$TMUX" ]; then
+    echo "已在 tmux 会话内 (${TMUX##*/})，勿嵌套。先 Ctrl+B d 脱离再 attach。"
+    return 0
+  fi
+  if tmux has-session -t main 2>/dev/null; then
+    tmux attach -t main
+  else
+    tmux new -s main
+  fi
+}
