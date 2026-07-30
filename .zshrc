@@ -330,3 +330,36 @@ tta() {
     tmux new -s main
   fi
 }
+
+# ========== [ Starship 提示符 ] =========
+eval "$(starship init zsh)"
+
+# ========== [ NotebookLM CLI ] =========
+# notebooklm-py 工具链配置
+# 安装: uv tool install notebooklm-py
+# 用法: notebooklm login | notebooklm list | notebooklm ask "问题"
+alias notebooklm='~/.local/share/uv/tools/notebooklm-py/bin/notebooklm'
+# 快速笔记本工作流函数
+nb() {
+  case "$1" in
+    "sync")
+      # 同步本地文档到 NotebookLM
+      local nb_name="${2:-$HOME/brain}"
+      notebooklm use "$nb_name" 2>/dev/null || notebooklm create "$nb_name"
+      notebooklm source add . "$HOME/brain"/*.md 2>/dev/null
+      echo "✅ 已同步 $HOME/brain 到 NotebookLM"
+      ;;
+    "ask")
+      notebooklm ask "$2"
+      ;;
+    "list")
+      notebooklm list
+      ;;
+    *)
+      echo "用法: nb {sync|ask|list} [参数]"
+      echo "  nb sync <笔记本名>  - 同步本地文档"
+      echo "  nb ask <问题>       - 提问 NotebookLM"
+      echo "  nb list             - 列出所有笔记本"
+      ;;
+  esac
+}
