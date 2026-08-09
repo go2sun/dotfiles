@@ -18,6 +18,14 @@ export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/
 export CF_API_TOKEN="«redacted-old-cf-token»"
 
 
+# 将 Cargo 路径加入系统 PATH
+export PATH="$HOME/.cargo/bin:$PATH"
+export NBLM_ACCESS_TOKEN=$(gcloud auth print-access-token)
+
+
+export NBLM_PROJECT_NUMBER="635392071609"
+export NBLM_LOCATION="global"
+export NBLM_ENDPOINT_LOCATION="global"
 
 # 统一入口配置
 # 清掉 OMZ git 插件占用的同名 alias, 避免与下面的 brain 系列函数冲突(parse error)
@@ -233,6 +241,7 @@ function crsm() {
 # 4. 别名汇总
 
 alias cs="cleanm4 && syncm4"
+alias ql='cleanup-daily.sh'
 alias reset="~/scripts/reset.sh"
 alias ghostty="/Applications/Ghostty.app/Contents/MacOS/ghostty"
 alias litellm="litellm --model anthropic/qwen-35b-local --api_base http://127.0.0.1:8080 --port 4000"
@@ -363,3 +372,10 @@ nb() {
       ;;
   esac
 }
+
+# Claude 成本监控别名
+
+# Claude 对话隔离与使用量管理别名
+alias claude-new='~/.claude/conversation-isolation.sh new'
+alias claude-conversations='~/.claude/conversation-isolation.sh list'
+export PATH="$HOME/.local/bin:$PATH"
