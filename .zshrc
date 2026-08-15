@@ -1,3 +1,12 @@
+# ========== [ Hermes Agent: RTK + Caveman 别名 ] ==========
+alias cgs='~/bin/caveman_wrapper.sh git-status'
+alias cgl='~/bin/caveman_wrapper.sh git-log'
+alias clint='~/bin/caveman_wrapper.sh lint'
+alias ctest='~/bin/caveman_wrapper.sh test-results'
+alias gs='rtk git status'
+alias gl='rtk git log --oneline -10'
+alias gd='rtk git diff'
+alias verify-hermes='~/bin/verify_caveman_setup.sh'
 # ========== [ Oh My Zsh 启用段 ] ==========
 export ZSH="$HOME/.oh-my-zsh"
 # 最小默认配置: 仅启用 OMZ 框架本身, 不额外加载插件以保持资源占用基准纯净
@@ -15,12 +24,11 @@ export BRAIN_DIR="$HOME/brain"
 # 1. 设置基础路径：优先系统和 Homebrew
 export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
-export CF_API_TOKEN="«redacted-old-cf-token»"
+export CF_API_TOKEN="redacted-old-cf-token"
 
 
 # 将 Cargo 路径加入系统 PATH
 export PATH="$HOME/.cargo/bin:$PATH"
-export NBLM_ACCESS_TOKEN=$(gcloud auth print-access-token)
 
 
 export NBLM_PROJECT_NUMBER="635392071609"
@@ -379,3 +387,6 @@ nb() {
 alias claude-new='~/.claude/conversation-isolation.sh new'
 alias claude-conversations='~/.claude/conversation-isolation.sh list'
 export PATH="$HOME/.local/bin:$PATH"
+
+# pi (pi-coding-agent) — global npm bin on PATH
+export PATH="$HOME/.npm-global/bin:$PATH"
