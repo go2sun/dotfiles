@@ -110,10 +110,12 @@ ccs() {
 }
 
 # --- [系统清理与防御] ---
+# HF 模型缓存已统一迁至外置盘 ORICO (见 HF_HOME)，cleanm4 不再碰 ~/.cache/huggingface，避免误删模型
+export HF_HOME=/Volumes/ORICO/Models/hf-cache
 cleanm4() {
     echo "🚀 正在执行 M4 深度清理..."
     sudo killall -9 idleassetsd 2>/dev/null
-    rm -rf ~/Library/Caches/* ~/.cache/huggingface/hub/* 2>/dev/null
+    rm -rf ~/Library/Caches/* 2>/dev/null
     brew cleanup --prune=all
     echo "✨ 清理完成。"
 }
@@ -390,3 +392,84 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # pi (pi-coding-agent) — global npm bin on PATH
 export PATH="$HOME/.npm-global/bin:$PATH"
+# --- Claude Code & Codex & Gemini 统一工作流（macOS / zsh 版 · 自动触发）---
+#
+# 用法：
+#   1. 本段已写入 ~/.zshrc（含 chpwd 自动触发）
+#   2. source ~/.zshrc 或重启终端
+#   3. 手动：在任意目录下敲 `aisync` 立即同步
+#      自动：cd 进「受信任根目录」及其子目录时自动同步
+#
+# 平台差异（非抄错，是限制）：
+#   - CLAUDE.md -> AGENTS.md：APFS 文件硬链接（ln），改一处两端同变
+#   - .claude/skills -> .codex/skills, .gemini/skills：APFS 不允许目录硬链接，
+#     改用符号链接（ln -s）。日常改文件效果一致；唯一区别是若整目录删除/挪走
+#     源 .claude/skills，另两个会变断链（仅删目录内文件不受影响）。
+#
+# 自动触发的副作用闸门（避免污染别人项目 / 临时目录）：
+#   - AISYNC_ROOTS：仅当 $PWD 落在这些根目录（含子目录）内才自动同步；
+#     其余位置（/tmp、~/Downloads、clone 的他人仓库等）绝不自动留痕。
+#   - .no-aisync：在任意目录放一个该空文件，可局部关闭自动同步（手动 aisync 仍可用）。
+
+# 受信任根目录：按需增删（手动 aisync 不受此限，任何目录都能跑）
+AISYNC_ROOTS=(
+  "$HOME/Documents/Project"
+  "$HOME/superpowers"
+  "$HOME/msgvault"
+  "$HOME/Cap"
+  "$HOME/hermes-hudui"
+  "$HOME/llama.cpp"
+  "$HOME/kb"
+  "$HOME/bin"
+)
+
+aisync() {
+    local curr="$PWD"
+    echo -e "\033[36m>>> 正在同步 AI 项目配置: $curr\033[0m"
+
+    # 1. 核心指令文件同步: CLAUDE.md (源) -> AGENTS.md (硬链接)
+    if [[ -f "CLAUDE.md" ]]; then
+        rm -f "AGENTS.md"
+        ln "CLAUDE.md" "AGENTS.md"
+        echo -e "\033[32m [√] AGENTS.md (HardLink) 已建立\033[0m"
+    else
+        echo -e "\033[33m [!] 当前目录没有 CLAUDE.md，跳过 AGENTS.md 映射。\033[0m"
+    fi
+
+    # 2. 技能库文件夹同步: .claude/skills (源) -> .codex/skills, .gemini/skills (符号链接)
+    local src_skills=".claude/skills"
+    if [[ -d "$src_skills" ]]; then
+        local targets=(".codex/skills" ".gemini/skills")
+        for t in "${targets[@]}"; do
+            local parent
+            parent=$(dirname "$t")
+            mkdir -p "$parent"
+
+            if [[ -e "$t" || -L "$t" ]]; then
+                rm -rf "$t"
+            fi
+            ln -s "$curr/$src_skills" "$t"
+            echo -e "\033[32m [√] $t (symlink) 已同步\033[0m"
+        done
+    else
+        echo -e "\033[33m [!] 未找到源技能库 .claude/skills，跳过文件夹映射。\033[0m"
+    fi
+}
+
+# 自动触发：仅「受信任根目录」+「无 .no-aisync」+「确有可同步内容」时
+aisync_auto() {
+    [[ -f "$PWD/.no-aisync" ]] && return
+    [[ -f "CLAUDE.md" || -d ".claude/skills" ]] || return
+    local r
+    for r in "${AISYNC_ROOTS[@]}"; do
+        case "$PWD" in
+            "$r"|"$r"/*)
+                aisync
+                return
+                ;;
+        esac
+    done
+}
+
+autoload -Uz add-zsh-hook 2>/dev/null
+add-zsh-hook chpwd aisync_auto
