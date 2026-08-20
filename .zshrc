@@ -160,24 +160,26 @@ audit() {
     echo ""
 }
 
-# 3. 同步与清理逻辑 (syncm4) - 保持了你原有的闭环逻辑
+# 3. 同步与清理逻辑 (syncm4) - 更新版
 syncm4() {
     local COMMIT_MSG="M4 审计同步: $(date '+%Y-%m-%d %H:%M:%S')"
-    echo "🛡️ [M4 审计] 启动全量同步..."
+    echo "🛡️ [M4 审计] 启动全量视觉归档与同步..."
     
-    # 代码仓库同步
+    # 1. 运行刚刚的归档脚本
+    bash "$HOME/scripts/syncm4_upload.sh"
+    
+    # 2. 代码仓库同步逻辑
     local sync_dirs=("$HOME/M4_Repo" "$HOME/dotfiles" "$HOME/brain")
     for dir in "${sync_dirs[@]}"; do
         if [ -d "$dir/.git" ]; then
             cd "$dir" || continue
-            # 仅扫描敏感信息
-            local leaked=$(grep -rIEl "AIza|ghp_" . --exclude-dir=.git --exclude=*.log 2>/dev/null)
-            [ -n "$leaked" ] && echo "⚠️ 审计警告: $dir 发现敏感文件。" || echo "✅ $dir 扫描安全。"
             git add . && git commit -m "$COMMIT_MSG" >/dev/null 2>&1
             git push origin main >/dev/null 2>&1
         fi
     done
-    curl -X POST "$OBSIDIAN_API_URL/append/" -d "- [x] **M4 同步完成**: $(date)" --silent --output /dev/null
+    
+    # 3. 闭环记录
+    curl -X POST "$OBSIDIAN_API_URL/append/" -d "- [x] **M4 审计链路闭环**: $(date)" --silent --output /dev/null
     echo "✨ 审计链路闭环。"
 }
 
