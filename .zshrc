@@ -166,7 +166,7 @@ syncm4() {
     echo "🛡️ [M4 审计] 启动全量视觉归档与同步..."
     
     # 1. 运行归档脚本 (确保脚本路径正确且有执行权限)
-    bash "$HOME/scripts/m4_audit_archive.sh"
+    bash "$HOME/scripts/syncm4_upload.sh"
     
     # 2. 代码仓库同步逻辑 (修正 grep 语法，加引号)
     local sync_dirs=("$HOME/M4_Repo" "$HOME/dotfiles" "$HOME/brain")
