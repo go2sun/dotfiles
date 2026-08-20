@@ -165,16 +165,22 @@ syncm4() {
     local COMMIT_MSG="M4 审计同步: $(date '+%Y-%m-%d %H:%M:%S')"
     echo "🛡️ [M4 审计] 启动全量视觉归档与同步..."
     
-    # 1. 运行刚刚的归档脚本
-    bash "$HOME/scripts/syncm4_upload.sh"
+    # 1. 运行归档脚本 (确保脚本路径正确且有执行权限)
+    bash "$HOME/scripts/m4_audit_archive.sh"
     
-    # 2. 代码仓库同步逻辑
+    # 2. 代码仓库同步逻辑 (修正 grep 语法，加引号)
     local sync_dirs=("$HOME/M4_Repo" "$HOME/dotfiles" "$HOME/brain")
     for dir in "${sync_dirs[@]}"; do
         if [ -d "$dir/.git" ]; then
             cd "$dir" || continue
-            git add . && git commit -m "$COMMIT_MSG" >/dev/null 2>&1
+            # 修正了 --exclude，加上了引号
+            local leaked=$(grep -rIEl "AIza|ghp_" . --exclude-dir=.git --exclude="*.log" 2>/dev/null)
+            [ -n "$leaked" ] && echo "⚠️ 审计警告: $dir 发现敏感文件。"
+            
+            git add .
+            git commit -m "$COMMIT_MSG" >/dev/null 2>&1
             git push origin main >/dev/null 2>&1
+            echo "✅ $dir 同步完成。"
         fi
     done
     
